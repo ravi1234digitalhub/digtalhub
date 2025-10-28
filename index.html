@@ -1,15 +1,15 @@
 <!doctype html>
 <html lang="hi">
 <head>
-  <link rel="manifest" href="manifest.json">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Digital Hub — Booking (Group Notify)</title>
+<link rel="manifest" href="manifest.webmanifest">
 <script>
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('service-worker.js');
   }
 </script>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Digital Hub — Booking (Group Notify)</title>
 <style>
   :root{--blue:#075985;--accent:#6366f1;--card:#fff;--muted:#64748b}
   body{margin:0;font-family:Arial, Helvetica, sans-serif;background:#f3f7fb;color:#102027}
@@ -34,7 +34,8 @@
 </style>
 </head>
 <body>
-  <!-- 🔹 App Install Button (Top Fixed) -->
+
+<!-- 🔹 App Install Bar (Top Fixed) -->
 <div id="installAppBar" 
      style="position:fixed;top:0;left:0;width:100%;
      background:#075985;color:white;text-align:center;
@@ -49,30 +50,7 @@
   </button>
 </div>
 
-<script>
-  let deferredPrompt;
-  const installBar = document.getElementById('installAppBar');
-  const installBtn = document.getElementById('installAppBtn');
-
-  window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-    installBar.style.display = 'block';
-  });
-
-  installBtn.addEventListener('click', async () => {
-    installBar.style.display = 'none';
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    if (outcome === 'accepted') {
-      console.log('App installed');
-    }
-    deferredPrompt = null;
-  });
-</script>
-
-
-<header class="hero">
+<header class="hero" style="margin-top:50px;">
   <h1>Digital Hub Cyber Café</h1>
   <div class="meta">⏰ समय: सुबह 6:00 बजे से 9:00 बजे तक और शाम 5:00 बजे से 10:00 बजे तक &nbsp; | &nbsp; 📞 7033066081 / 7250580787 &nbsp; | &nbsp; ✉️ bhelwa143@gmail.com &nbsp; | &nbsp; 💬 <a href="https://wa.me/917033066081" target="_blank" style="color:inherit;text-decoration:underline">WhatsApp: 7033066081</a></div>
 </header>
@@ -85,13 +63,10 @@
       <form id="form">
         <label>पूरा नाम *</label>
         <input id="name" required>
-
         <label>मोबाइल नंबर *</label>
         <input id="mobile" pattern="[0-9]{10}" required placeholder="10 अंक">
-
         <label>ईमेल (यदि हो)</label>
         <input id="email" type="email">
-
         <label>सेवा / फ़ॉर्म का प्रकार *</label>
         <select id="form_needed" required>
           <option value="">-- चुनें --</option>
@@ -119,40 +94,26 @@
 
         <label>अपॉइंटमेंट तारीख (यदि आप चुनना चाहें)</label>
         <input id="date" type="date">
-
         <label>टाइम स्लॉट (खाली छोड़ें यदि auto-assign चाहिए)</label>
         <div id="slots" class="slot-list"></div>
-
         <label>नोट (यदि कोई)</label>
         <textarea id="notes" rows="3"></textarea>
-
         <div style="display:flex;gap:10px;margin-top:14px">
           <button type="submit">बुक करें</button>
           <button type="button" id="resetBtn" style="background:#e6eefc;color:#0b2540">Reset</button>
         </div>
       </form>
-
       <div id="msg" class="success" style="display:none"></div>
-      <p style="color:#475569;font-size:13px;margin-top:10px">नोट: पेज demo मोड में localStorage इस्तेमाल करेगा और webhook पर POST भी करेगा (यदि URL भरें)।</p>
     </section>
 
     <aside class="card">
       <h3>Admin Controls</h3>
-      <p style="color:#475569">Auto-notify: Email + Google Sheet</p>
       <label>Webhook / Google Apps Script URL</label>
       <input id="webhook" placeholder="https://script.google.com/macros/s/XXXX/exec">
-
       <div style="display:flex;flex-direction:column;gap:10px;margin-top:12px">
         <button id="view" style="background:#4f46e5">सभी बुकिंग देखें</button>
         <button id="export" style="background:#6366f1">बुकिंग सूची कॉपी करें</button>
       </div>
-
-      <hr style="margin:14px 0;border-color:#e6eef6">
-
-      <p style="font-weight:700;margin:0">Contact:</p>
-      <p style="margin:4px 0">Digital Hub Cyber Café</p>
-      <p style="margin:4px 0">7033066081 | 7250580787</p>
-      <p style="margin:4px 0">bhelwa143@gmail.com</p>
     </aside>
   </main>
 
@@ -163,113 +124,26 @@
 </div>
 
 <script>
-const SLOT_MIN = 30;
-const slotsConfig = [{start:'06:00',end:'09:00'},{start:'17:00',end:'22:00'}];
-const WHATSAPP_GROUP_LINK = "https://chat.whatsapp.com/KZ4GLW45CgQKX7Lktbe9Oq"; // user provided
+let deferredPrompt;
+const installBar = document.getElementById('installAppBar');
+const installBtn = document.getElementById('installAppBtn');
 
-function timeToMins(t){const [hh,mm]=t.split(':').map(Number);return hh*60+mm;}
-function minsToTime(m){const hh=Math.floor(m/60);const mm=m%60;return String(hh).padStart(2,'0')+':'+String(mm).padStart(2,'0');}
-function generateSlots(){const arr=[];slotsConfig.forEach(cfg=>{const s=timeToMins(cfg.start), e=timeToMins(cfg.end);for(let t=s;t<e;t+=SLOT_MIN) arr.push(minsToTime(t));});return arr;}
-
-function getBookings(){try{return JSON.parse(localStorage.getItem('bookings')||'[]')}catch(e){return []}}
-function saveBooking(b){const a=getBookings();a.push(b);localStorage.setItem('bookings',JSON.stringify(a));}
-
-const slotsEl = document.getElementById('slots');
-const dateEl = document.getElementById('date');
-const form = document.getElementById('form');
-const msg = document.getElementById('msg');
-const webhookEl = document.getElementById('webhook');
-let selected = null;
-
-function renderSlotsFor(date){
-  slotsEl.innerHTML=''; if(!date) return;
-  const all = generateSlots();
-  const bookings = getBookings().filter(b=>b.date===date);
-  all.forEach(s=>{
-    const full = bookings.some(b=>b.slot===s);
-    const d = document.createElement('div');
-    d.className = 'slot' + (full ? ' full':'');
-    d.textContent = s;
-    d.addEventListener('click', ()=>{ if(full) return; document.querySelectorAll('.slot').forEach(x=>x.classList.remove('selected')); d.classList.add('selected'); selected = s; });
-    slotsEl.appendChild(d);
-  });
-}
-
-dateEl.addEventListener('change', ()=>{ selected=null; renderSlotsFor(dateEl.value); });
-window.addEventListener('load', ()=>{ dateEl.value = new Date().toISOString().slice(0,10); renderSlotsFor(dateEl.value); });
-
-function findFirstAvailable(date){
-  const all = generateSlots();
-  const bookings = getBookings().filter(b=>b.date===date);
-  for(const s of all) if(!bookings.some(b=>b.slot===s)) return s;
-  return null;
-}
-
-function copyToClipboard(text){
-  if(navigator.clipboard && navigator.clipboard.writeText){
-    return navigator.clipboard.writeText(text);
-  } else {
-    const ta = document.createElement('textarea');
-    ta.value = text; document.body.appendChild(ta);
-    ta.select(); try{ document.execCommand('copy'); }catch(e){}
-    document.body.removeChild(ta); return Promise.resolve();
-  }
-}
-
-form.addEventListener('submit', async(e)=>{
+window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
-  const name = document.getElementById('name').value.trim();
-  const mobile = document.getElementById('mobile').value.trim();
-  const email = document.getElementById('email').value.trim();
-  const form_needed = document.getElementById('form_needed').value;
-  let date = document.getElementById('date').value;
-  let slot = selected;
-  if(!name||!mobile||!form_needed){ alert('कृपया जरूरी फील्ड भरें'); return; }
-  if(!date){ date = new Date().toISOString().slice(0,10); }
-  if(!slot){ slot = findFirstAvailable(date); if(!slot){ alert('चयनित तारीख पर कोई उपलब्ध स्लॉट नहीं है। कृपया दूसरी तारीख चुनें।'); return; } }
-  const id = 'BKG'+Date.now().toString(36).toUpperCase().slice(-8);
-  const booking = {id,name,mobile,email,form_needed,date,slot,notes:document.getElementById('notes').value,created:new Date().toISOString()};
-  saveBooking(booking);
-  renderSlotsFor(date);
-  msg.style.display='block';
-  msg.innerHTML = '<strong>बुकिंग सफल! ID: '+id+'</strong><br>'+name+' — '+date+' '+slot+'<br><br><em>कृपया दिए गए समय पर अवश्य आएं।</em><br><strong>धन्यवाद!</strong>';
-  const webhook = webhookEl.value.trim();
-  if(webhook){
-    try{ await fetch(webhook,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(booking)}); }catch(err){console.warn('Webhook failed',err);}
-  }
-
-  const groupMsg = 'नयी बुकिंग\nID:'+id+'\nनाम:'+name+'\nमोबाइल:'+mobile+'\nफ़ॉर्म:'+form_needed+'\nतिथि:'+date+' '+slot;
-  const groupBtn = document.createElement('button');
-  groupBtn.textContent = 'ग्रुप में नोटिफाई करें (Copy & Open Group)';
-  groupBtn.style.marginTop='8px';
-  groupBtn.addEventListener('click', ()=>{
-    copyToClipboard(groupMsg).then(()=> {
-      window.open(WHATSAPP_GROUP_LINK,'_blank');
-      alert('बुकिंग संदेश क्लिपबोर्ड में कॉपी कर दिया गया है — अब ग्रुप में जाकर paste करके भेज दें।');
-    }).catch(()=> {
-      window.open(WHATSAPP_GROUP_LINK,'_blank');
-      alert('ग्रुप लिंक खुल गया — कृपया मैन्युअली संदेश कॉपी करके पेस्ट करें।');
-    });
-  });
-  msg.appendChild(groupBtn);
-
-  const personalBtn = document.createElement('button');
-  personalBtn.textContent = 'एडमिन को WhatsApp (सिधा)';
-  personalBtn.style.marginTop='8px'; personalBtn.style.marginLeft='8px';
-  personalBtn.addEventListener('click', ()=>{
-    const msgText = encodeURIComponent('नयी बुकिंग\nID:'+id+'\nनाम:'+name+'\nमोबाइल:'+mobile+'\nफ़ॉर्म:'+form_needed+'\nतिथि:'+date+' '+slot);
-    window.open('https://wa.me/917033066081?text='+msgText,'_blank');
-  });
-  msg.appendChild(personalBtn);
+  deferredPrompt = e;
+  installBar.style.display = 'block';
 });
 
-document.getElementById('resetBtn').addEventListener('click', ()=>{ form.reset(); selected=null; renderSlotsFor(dateEl.value); msg.style.display='none'; });
-
-document.getElementById('view').addEventListener('click', ()=>{ const b=getBookings(); if(b.length===0) return alert('कोई बुकिंग नहीं मिली'); const list=b.map(x=>'ID:'+x.id+' | '+x.name+' | '+x.mobile+' | '+x.form_needed+' | '+x.date+' '+x.slot).join('\n'); alert(list); });
-
-document.getElementById('export').addEventListener('click', ()=>{ const b=getBookings(); if(b.length===0) return alert('कोई बुकिंग नहीं मिली'); const txt=b.map(x=>'ID:'+x.id+','+x.name+','+x.mobile+','+x.form_needed+','+x.date+','+x.slot).join('\n'); navigator.clipboard.writeText(txt).then(()=>alert('बुकिंग सूची क्लिपबोर्ड पर कॉपी हो गई।')); });
+installBtn.addEventListener('click', async () => {
+  installBar.style.display = 'none';
+  deferredPrompt.prompt();
+  const { outcome } = await deferredPrompt.userChoice;
+  if (outcome === 'accepted') {
+    console.log('App installed');
+  }
+  deferredPrompt = null;
+});
 </script>
+
 </body>
 </html>
-
-
