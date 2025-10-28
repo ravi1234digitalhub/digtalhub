@@ -34,6 +34,43 @@
 </style>
 </head>
 <body>
+  <!-- 🔹 App Install Button (Top Fixed) -->
+<div id="installAppBar" 
+     style="position:fixed;top:0;left:0;width:100%;
+     background:#075985;color:white;text-align:center;
+     font-weight:bold;padding:10px 0;z-index:2000;
+     box-shadow:0 2px 6px rgba(0,0,0,0.2);display:none;">
+  📲 अपनी Digital Hub App इंस्टॉल करें 
+  <button id="installAppBtn"
+    style="margin-left:10px;background:white;color:#075985;
+    border:none;padding:6px 10px;border-radius:6px;
+    cursor:pointer;font-weight:bold;">
+    इंस्टॉल करें
+  </button>
+</div>
+
+<script>
+  let deferredPrompt;
+  const installBar = document.getElementById('installAppBar');
+  const installBtn = document.getElementById('installAppBtn');
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    installBar.style.display = 'block';
+  });
+
+  installBtn.addEventListener('click', async () => {
+    installBar.style.display = 'none';
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      console.log('App installed');
+    }
+    deferredPrompt = null;
+  });
+</script>
+
 
 <header class="hero">
   <h1>Digital Hub Cyber Café</h1>
@@ -234,4 +271,5 @@ document.getElementById('export').addEventListener('click', ()=>{ const b=getBoo
 </script>
 </body>
 </html>
+
 
