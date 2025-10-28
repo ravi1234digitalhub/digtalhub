@@ -1,7 +1,7 @@
 {
   "name": "Digital Hub Cyber Café",
   "short_name": "Digital Hub",
-  "start_url": "./index.html",
+  "start_url": "/digtalhub/index.html",
   "display": "standalone",
   "background_color": "#075985",
   "theme_color": "#075985",
