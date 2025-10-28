@@ -1,6 +1,12 @@
 <!doctype html>
 <html lang="hi">
 <head>
+  <link rel="manifest" href="manifest.json">
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('service-worker.js');
+  }
+</script>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Digital Hub — Booking (Group Notify)</title>
@@ -228,3 +234,4 @@ document.getElementById('export').addEventListener('click', ()=>{ const b=getBoo
 </script>
 </body>
 </html>
+
