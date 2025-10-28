@@ -1,6 +1,18 @@
 <!doctype html>
 <html lang="hi">
 <head>
+  <link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#075985">
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('service-worker.js')
+      .then(() => console.log('SW registered'))
+      .catch(err => console.log('SW failed', err));
+  });
+}
+</script>
+
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Digital Hub — Booking (Group Notify)</title>
@@ -147,3 +159,4 @@ installBtn.addEventListener('click', async () => {
 
 </body>
 </html>
+
