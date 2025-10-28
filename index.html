@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="hi">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Digital Hub — Booking (Group Notify)</title>
+<style>
+  :root{--blue:#075985;--accent:#6366f1;--card:#fff;--muted:#64748b}
+  body{margin:0;font-family:Arial, Helvetica, sans-serif;background:#f3f7fb;color:#102027}
+  .hero{background:var(--blue);color:white;padding:28px 16px;text-align:center}
+  .hero h1{margin:0;font-size:34px;font-weight:700;letter-spacing:0.5px}
+  .hero .meta{margin-top:10px;font-size:15px;color:rgba(255,255,255,0.95)}
+  .container{max-width:980px;margin:18px auto;padding:0 12px}
+  main{display:grid;grid-template-columns:1fr 320px;gap:18px;margin-top:18px}
+  .card{background:var(--card);padding:18px;border-radius:10px;box-shadow:0 6px 18px rgba(6,30,50,0.06)}
+  label{display:block;font-weight:700;margin-top:12px}
+  input,select,textarea{width:100%;padding:10px;margin-top:6px;border:1px solid #e6eef6;border-radius:8px;font-size:14px}
+  .slot-list{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+  .slot{padding:8px 10px;border-radius:8px;border:1px solid #e6eef6;background:#f8feff;cursor:pointer}
+  .slot.selected{background:var(--accent);color:white;border-color:var(--accent)}
+  .slot.full{background:#f3f4f6;color:#9aa3ad;cursor:not-allowed}
+  button{background:var(--accent);color:white;border:0;padding:10px 12px;border-radius:10px;cursor:pointer;font-weight:700}
+  .success{background:#ecfdf5;border-left:4px solid #10b981;padding:12px;margin-top:12px;border-radius:8px}
+  footer{margin-top:22px;text-align:center;color:var(--muted);font-size:14px;padding:12px}
+  .address-box{background:#f8fafb;border:1px solid #e2e8f0;padding:10px;border-radius:8px;display:inline-block;margin-top:10px;color:#0b2540}
+  .small{font-size:13px;color:#475569;margin-top:8px}
+  @media(max-width:900px){main{grid-template-columns:1fr;padding:0 8px}}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <h1>Digital Hub Cyber Café</h1>
+  <div class="meta">⏰ समय: सुबह 6:00 बजे से 9:00 बजे तक और शाम 5:00 बजे से 10:00 बजे तक &nbsp; | &nbsp; 📞 7033066081 / 7250580787 &nbsp; | &nbsp; ✉️ bhelwa143@gmail.com &nbsp; | &nbsp; 💬 <a href="https://wa.me/917033066081" target="_blank" style="color:inherit;text-decoration:underline">WhatsApp: 7033066081</a></div>
+</header>
+
+<div class="container">
+  <main>
+    <section class="card">
+      <h2>अपॉइंटमेंट फॉर्म</h2>
+      <p class="small">आप तारीख और समय चुन सकते हैं — नहीं चुना तो सिस्टम पहला उपलब्ध स्लॉट दे देगा।</p>
+      <form id="form">
+        <label>पूरा नाम *</label>
+        <input id="name" required>
+
+        <label>मोबाइल नंबर *</label>
+        <input id="mobile" pattern="[0-9]{10}" required placeholder="10 अंक">
+
+        <label>ईमेल (यदि हो)</label>
+        <input id="email" type="email">
+
+        <label>सेवा / फ़ॉर्म का प्रकार *</label>
+        <select id="form_needed" required>
+          <option value="">-- चुनें --</option>
+          <option>मैट्रिक / इंटर का एडमिशन फॉर्म</option>
+          <option>भूमि संबंधित सेवाएं</option>
+          <option>पुराना दस्तावेज़ / खतियान निकाले</option>
+          <option>पुराना जमीन का रसीद</option>
+          <option>जमाबंदी का रजिस्टर 2 देखें</option>
+          <option>दाखिल ख़ारिज ऑनलाइन</option>
+          <option>जमाबंदी सुधार हेतु परिशोधन ऑनलाइन</option>
+          <option>पुराने से पुराने जमीन विवरण देखें</option>
+          <option>बैंकिंग सेवाएं</option>
+          <option>मनी ट्रांसफर</option>
+          <option>बैंक में नया खाता खोलें</option>
+          <option>आवासीय / जाति / आय ऑनलाइन / नॉनक्रीमीलेयर / EWS</option>
+          <option>पेंशन (60 साल के बाद)</option>
+          <option>पैन कार्ड / राशन कार्ड</option>
+          <option>बिजली भुगतान</option>
+          <option>परीक्षा फॉर्म</option>
+          <option>स्कूल प्रवेश</option>
+          <option>छात्रवृत्ति</option>
+          <option>सरकारी नौकरी आवेदन</option>
+          <option>अन्य</option>
+        </select>
+
+        <label>अपॉइंटमेंट तारीख (यदि आप चुनना चाहें)</label>
+        <input id="date" type="date">
+
+        <label>टाइम स्लॉट (खाली छोड़ें यदि auto-assign चाहिए)</label>
+        <div id="slots" class="slot-list"></div>
+
+        <label>नोट (यदि कोई)</label>
+        <textarea id="notes" rows="3"></textarea>
+
+        <div style="display:flex;gap:10px;margin-top:14px">
+          <button type="submit">बुक करें</button>
+          <button type="button" id="resetBtn" style="background:#e6eefc;color:#0b2540">Reset</button>
+        </div>
+      </form>
+
+      <div id="msg" class="success" style="display:none"></div>
+      <p style="color:#475569;font-size:13px;margin-top:10px">नोट: पेज demo मोड में localStorage इस्तेमाल करेगा और webhook पर POST भी करेगा (यदि URL भरें)।</p>
+    </section>
+
+    <aside class="card">
+      <h3>Admin Controls</h3>
+      <p style="color:#475569">Auto-notify: Email + Google Sheet</p>
+      <label>Webhook / Google Apps Script URL</label>
+      <input id="webhook" placeholder="https://script.google.com/macros/s/XXXX/exec">
+
+      <div style="display:flex;flex-direction:column;gap:10px;margin-top:12px">
+        <button id="view" style="background:#4f46e5">सभी बुकिंग देखें</button>
+        <button id="export" style="background:#6366f1">बुकिंग सूची कॉपी करें</button>
+      </div>
+
+      <hr style="margin:14px 0;border-color:#e6eef6">
+
+      <p style="font-weight:700;margin:0">Contact:</p>
+      <p style="margin:4px 0">Digital Hub Cyber Café</p>
+      <p style="margin:4px 0">7033066081 | 7250580787</p>
+      <p style="margin:4px 0">bhelwa143@gmail.com</p>
+    </aside>
+  </main>
+
+  <footer>
+    <div class="address-box">📍 Areraj, Girl High School Road, Bihar – 845411</div>
+    <div style="margin-top:8px;color:#64748b;font-size:13px">© Digital Hub Cyber Café</div>
+  </footer>
+</div>
+
+<script>
+const SLOT_MIN = 30;
+const slotsConfig = [{start:'06:00',end:'09:00'},{start:'17:00',end:'22:00'}];
+const WHATSAPP_GROUP_LINK = "https://chat.whatsapp.com/KZ4GLW45CgQKX7Lktbe9Oq"; // user provided
+
+function timeToMins(t){const [hh,mm]=t.split(':').map(Number);return hh*60+mm;}
+function minsToTime(m){const hh=Math.floor(m/60);const mm=m%60;return String(hh).padStart(2,'0')+':'+String(mm).padStart(2,'0');}
+function generateSlots(){const arr=[];slotsConfig.forEach(cfg=>{const s=timeToMins(cfg.start), e=timeToMins(cfg.end);for(let t=s;t<e;t+=SLOT_MIN) arr.push(minsToTime(t));});return arr;}
+
+function getBookings(){try{return JSON.parse(localStorage.getItem('bookings')||'[]')}catch(e){return []}}
+function saveBooking(b){const a=getBookings();a.push(b);localStorage.setItem('bookings',JSON.stringify(a));}
+
+const slotsEl = document.getElementById('slots');
+const dateEl = document.getElementById('date');
+const form = document.getElementById('form');
+const msg = document.getElementById('msg');
+const webhookEl = document.getElementById('webhook');
+let selected = null;
+
+function renderSlotsFor(date){
+  slotsEl.innerHTML=''; if(!date) return;
+  const all = generateSlots();
+  const bookings = getBookings().filter(b=>b.date===date);
+  all.forEach(s=>{
+    const full = bookings.some(b=>b.slot===s);
+    const d = document.createElement('div');
+    d.className = 'slot' + (full ? ' full':'');
+    d.textContent = s;
+    d.addEventListener('click', ()=>{ if(full) return; document.querySelectorAll('.slot').forEach(x=>x.classList.remove('selected')); d.classList.add('selected'); selected = s; });
+    slotsEl.appendChild(d);
+  });
+}
+
+dateEl.addEventListener('change', ()=>{ selected=null; renderSlotsFor(dateEl.value); });
+window.addEventListener('load', ()=>{ dateEl.value = new Date().toISOString().slice(0,10); renderSlotsFor(dateEl.value); });
+
+function findFirstAvailable(date){
+  const all = generateSlots();
+  const bookings = getBookings().filter(b=>b.date===date);
+  for(const s of all) if(!bookings.some(b=>b.slot===s)) return s;
+  return null;
+}
+
+function copyToClipboard(text){
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    return navigator.clipboard.writeText(text);
+  } else {
+    const ta = document.createElement('textarea');
+    ta.value = text; document.body.appendChild(ta);
+    ta.select(); try{ document.execCommand('copy'); }catch(e){}
+    document.body.removeChild(ta); return Promise.resolve();
+  }
+}
+
+form.addEventListener('submit', async(e)=>{
+  e.preventDefault();
+  const name = document.getElementById('name').value.trim();
+  const mobile = document.getElementById('mobile').value.trim();
+  const email = document.getElementById('email').value.trim();
+  const form_needed = document.getElementById('form_needed').value;
+  let date = document.getElementById('date').value;
+  let slot = selected;
+  if(!name||!mobile||!form_needed){ alert('कृपया जरूरी फील्ड भरें'); return; }
+  if(!date){ date = new Date().toISOString().slice(0,10); }
+  if(!slot){ slot = findFirstAvailable(date); if(!slot){ alert('चयनित तारीख पर कोई उपलब्ध स्लॉट नहीं है। कृपया दूसरी तारीख चुनें।'); return; } }
+  const id = 'BKG'+Date.now().toString(36).toUpperCase().slice(-8);
+  const booking = {id,name,mobile,email,form_needed,date,slot,notes:document.getElementById('notes').value,created:new Date().toISOString()};
+  saveBooking(booking);
+  renderSlotsFor(date);
+  msg.style.display='block';
+  msg.innerHTML = '<strong>बुकिंग सफल! ID: '+id+'</strong><br>'+name+' — '+date+' '+slot+'<br><br><em>कृपया दिए गए समय पर अवश्य आएं।</em><br><strong>धन्यवाद!</strong>';
+  const webhook = webhookEl.value.trim();
+  if(webhook){
+    try{ await fetch(webhook,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(booking)}); }catch(err){console.warn('Webhook failed',err);}
+  }
+
+  const groupMsg = 'नयी बुकिंग\nID:'+id+'\nनाम:'+name+'\nमोबाइल:'+mobile+'\nफ़ॉर्म:'+form_needed+'\nतिथि:'+date+' '+slot;
+  const groupBtn = document.createElement('button');
+  groupBtn.textContent = 'ग्रुप में नोटिफाई करें (Copy & Open Group)';
+  groupBtn.style.marginTop='8px';
+  groupBtn.addEventListener('click', ()=>{
+    copyToClipboard(groupMsg).then(()=> {
+      window.open(WHATSAPP_GROUP_LINK,'_blank');
+      alert('बुकिंग संदेश क्लिपबोर्ड में कॉपी कर दिया गया है — अब ग्रुप में जाकर paste करके भेज दें।');
+    }).catch(()=> {
+      window.open(WHATSAPP_GROUP_LINK,'_blank');
+      alert('ग्रुप लिंक खुल गया — कृपया मैन्युअली संदेश कॉपी करके पेस्ट करें।');
+    });
+  });
+  msg.appendChild(groupBtn);
+
+  const personalBtn = document.createElement('button');
+  personalBtn.textContent = 'एडमिन को WhatsApp (सिधा)';
+  personalBtn.style.marginTop='8px'; personalBtn.style.marginLeft='8px';
+  personalBtn.addEventListener('click', ()=>{
+    const msgText = encodeURIComponent('नयी बुकिंग\nID:'+id+'\nनाम:'+name+'\nमोबाइल:'+mobile+'\nफ़ॉर्म:'+form_needed+'\nतिथि:'+date+' '+slot);
+    window.open('https://wa.me/917033066081?text='+msgText,'_blank');
+  });
+  msg.appendChild(personalBtn);
+});
+
+document.getElementById('resetBtn').addEventListener('click', ()=>{ form.reset(); selected=null; renderSlotsFor(dateEl.value); msg.style.display='none'; });
+
+document.getElementById('view').addEventListener('click', ()=>{ const b=getBookings(); if(b.length===0) return alert('कोई बुकिंग नहीं मिली'); const list=b.map(x=>'ID:'+x.id+' | '+x.name+' | '+x.mobile+' | '+x.form_needed+' | '+x.date+' '+x.slot).join('\n'); alert(list); });
+
+document.getElementById('export').addEventListener('click', ()=>{ const b=getBookings(); if(b.length===0) return alert('कोई बुकिंग नहीं मिली'); const txt=b.map(x=>'ID:'+x.id+','+x.name+','+x.mobile+','+x.form_needed+','+x.date+','+x.slot).join('\n'); navigator.clipboard.writeText(txt).then(()=>alert('बुकिंग सूची क्लिपबोर्ड पर कॉपी हो गई।')); });
+</script>
+</body>
+</html>
